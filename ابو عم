@@ -1,0 +1,204 @@
+import 'package:flutter/material.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'سوق السيارات والخدمات',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const HomeScreen(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+// نموذج المنتج/الخدمة
+class Product {
+  final String name;
+  final String description;
+  final double price;
+  final String image; // رابط صورة أو مسار محلي
+
+  const Product(this.name, this.description, this.price, this.image);
+}
+
+class Service {
+  final String name;
+  final String description;
+  final double price;
+  final String image;
+
+  const Service(this.name, this.description, this.price, this.image);
+}
+
+// الصفحة الرئيسية
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  final List<Product> products = const [
+    Product('بطارية سيارة', 'بطارية أصلية تدوم طويلاً', 350.0,
+        'https://cdn.pixabay.com/photo/2012/04/10/23/26/car-26684_1280.png'),
+    Product('زيت محرك', 'زيت محرك عالي الجودة', 120.0,
+        'https://cdn.pixabay.com/photo/2017/01/31/13/14/motor-oil-2021073_1280.png'),
+  ];
+
+  final List<Service> services = const [
+    Service('فحص كمبيوتر', 'فحص السيارة بجهاز متطور', 70.0,
+        'https://cdn.pixabay.com/photo/2014/04/03/10/32/tablet-312951_1280.png'),
+    Service('تبديل زيت', 'تبديل الزيت والفلاتر', 100.0,
+        'https://cdn.pixabay.com/photo/2012/04/13/20/24/oil-33663_1280.png'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('منتجات وخدمات السيارات')),
+      body: ListView(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(12.0),
+            child: Text('المنتجات:', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          ),
+          ...products.map((p) => ProductServiceCard(
+              title: p.name,
+              desc: p.description,
+              price: p.price,
+              image: p.image,
+              onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => DetailsScreen(
+                      name: p.name,
+                      desc: p.description,
+                      price: p.price,
+                      image: p.image,
+                      isProduct: true,
+                    ))
+                  ),
+            )),
+          const Padding(
+            padding: EdgeInsets.all(12.0),
+            child: Text('الخدمات:', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          ),
+          ...services.map((s) => ProductServiceCard(
+              title: s.name,
+              desc: s.description,
+              price: s.price,
+              image: s.image,
+              onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => DetailsScreen(
+                    name: s.name,
+                    desc: s.description,
+                    price: s.price,
+                    image: s.image,
+                    isProduct: false,
+                  ))
+                ),
+            )),
+        ],
+      ),
+    );
+  }
+}
+
+class ProductServiceCard extends StatelessWidget {
+  final String title, desc, image;
+  final double price;
+  final VoidCallback onTap;
+
+  const ProductServiceCard({
+    super.key,
+    required this.title,
+    required this.desc,
+    required this.price,
+    required this.image,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+      child: ListTile(
+        leading: Image.network(image, width: 45, height: 45, fit: BoxFit.contain, errorBuilder: (_, __, ___) => const Icon(Icons.image)),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(desc),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('${price.toStringAsFixed(0)} ر.س', style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            ElevatedButton(
+              onPressed: onTap,
+              child: const Text('تفاصيل'),
+              style: ElevatedButton.styleFrom(minimumSize: const Size(55, 25)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// شاشة تفاصيل المنتج/الخدمة
+class DetailsScreen extends StatelessWidget {
+  final String name, desc, image;
+  final double price;
+  final bool isProduct;
+  const DetailsScreen({
+    super.key,
+    required this.name,
+    required this.desc,
+    required this.price,
+    required this.image,
+    this.isProduct = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('تفاصيل ${isProduct ? 'المنتج' : 'الخدمة'}')),
+      body: Padding(
+        padding: const EdgeInsets.all(22.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Image.network(
+              image,
+              height: 150,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => const SizedBox(height: 150, child: Icon(Icons.image, size: 80)),
+            ),
+            const SizedBox(height: 20),
+            Text(name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Text(desc, style: const TextStyle(fontSize: 16)),
+            const Spacer(),
+            Text('السعر: ${price.toStringAsFixed(0)} ر.س', style: const TextStyle(fontSize: 18, color: Colors.green, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context, 
+                  builder: (_) => AlertDialog(
+                    title: const Text('تم إرسال الطلب!'),
+                    content: Text('تم طلب ${isProduct ? 'المنتج' : 'الخدمة'} "$name" بنجاح.\nسيتم التواصل معك قريبًا.'),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(context), child: const Text('حسنًا')),
+                    ],
+                  )
+                );
+              },
+              child: Text('طلب ${isProduct ? "المنتج" : "الخدمة"}'),
+              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
